@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { CheckCircle, XCircle, FileText, Building2, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { DeadlineSimulator } from './DeadlineSimulator';
 
 
 interface Event {
@@ -291,6 +292,11 @@ export function SuperAdminDashboard() {
 
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Deadline Simulator - Testing Only */}
+        <div className="mb-6">
+          <DeadlineSimulator />
+        </div>
+
         <Tabs defaultValue="events" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="events">Event Approval</TabsTrigger>
