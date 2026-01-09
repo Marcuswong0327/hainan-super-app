@@ -22,6 +22,8 @@ interface Event {
   associationName?: string;
   createdAt: string;
   rejectionComment?: string;
+  maxCapacity?: number;
+  currentParticipants?: number;
 }
 
 
@@ -37,6 +39,7 @@ export function SubEditorDashboard() {
     description: '',
     imageUrl: 'https://images.unsplash.com/photo-1760281151533-6667546ec444?w=800',
     organizationName: '',
+    maxCapacity: '',
   });
   const [myEvents, setMyEvents] = useState<Event[]>([]);
 
@@ -76,6 +79,8 @@ export function SubEditorDashboard() {
         id: Date.now().toString(),
         ...eventForm,
         price: parseFloat(eventForm.price),
+        maxCapacity: parseInt(eventForm.maxCapacity) || 0,
+        currentParticipants: 0,
         associationId: user?.associationId,
         associationName: eventForm.organizationName,
         status: 'pending',
@@ -96,6 +101,7 @@ export function SubEditorDashboard() {
         description: '',
         imageUrl: 'https://images.unsplash.com/photo-1760281151533-6667546ec444?w=800',
         organizationName: '',
+        maxCapacity: '',
       });
       fetchMyEvents();
     } catch (error) {
@@ -257,6 +263,24 @@ export function SubEditorDashboard() {
                   </div>
 
 
+                  {/* Max Capacity */}
+                  <div className="space-y-2">
+                    <Label htmlFor="maxCapacity">Maximum Capacity *</Label>
+                    <Input
+                      id="maxCapacity"
+                      type="number"
+                      min="1"
+                      placeholder="e.g., 100"
+                      value={eventForm.maxCapacity}
+                      onChange={(e) => setEventForm({ ...eventForm, maxCapacity: e.target.value })}
+                      required
+                    />
+                    <p className="text-xs text-gray-500">
+                      Maximum number of participants allowed for this event
+                    </p>
+                  </div>
+
+
                   {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Event Description</Label>
@@ -334,6 +358,9 @@ export function SubEditorDashboard() {
                               <div>Time: {event.time}</div>
                               <div>Venue: {event.venue}</div>
                               <div>Price: RM {event.price}</div>
+                              {event.maxCapacity && (
+                                <div>Max Capacity: {event.maxCapacity}</div>
+                              )}
                             </div>
                             <p className="text-sm text-gray-700 mb-2">{event.description}</p>
                             <p className="text-xs text-gray-500">
