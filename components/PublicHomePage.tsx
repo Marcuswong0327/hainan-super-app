@@ -336,8 +336,8 @@ export function PublicHomePage() {
                       <p className="text-sm text-gray-500 mb-2">{event.venue}</p>
                       {event.maxCapacity && (
                         <p className="text-sm text-gray-600 mb-2">
-                          Participants: {event.currentParticipants || 0} / {event.maxCapacity}
-                          {event.currentParticipants && event.maxCapacity && event.currentParticipants >= event.maxCapacity && (
+                          Max Capacity: {event.maxCapacity} participants
+                          {event.currentParticipants !== undefined && event.maxCapacity && event.currentParticipants >= event.maxCapacity && (
                             <span className="ml-2 text-red-600 font-medium">(Full)</span>
                           )}
                         </p>
@@ -352,7 +352,7 @@ export function PublicHomePage() {
                           }}
                           disabled={event.maxCapacity !== undefined && event.currentParticipants !== undefined && event.currentParticipants >= event.maxCapacity}
                         >
-                          {event.maxCapacity && event.currentParticipants && event.currentParticipants >= event.maxCapacity 
+                          {event.maxCapacity !== undefined && event.currentParticipants !== undefined && event.currentParticipants >= event.maxCapacity 
                             ? 'Full' 
                             : 'Book Now'}
                         </Button>
