@@ -6,8 +6,9 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { ArrowLeft, CreditCard, DollarSign, Calendar, CheckCircle2, Camera, FileText } from 'lucide-react';
+import { ArrowLeft, CreditCard, DollarSign, Calendar, CheckCircle2, Camera, FileText, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
+import { checkPaymentDeadlines, isPaymentOverdue } from '../utils/paymentDeadline';
 
 export function LoansPage({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
@@ -39,6 +40,9 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
   });
 
   useEffect(() => {
+    // Check payment deadlines on load
+    checkPaymentDeadlines();
+    
     // Load user's loan from localStorage
     const loans = JSON.parse(localStorage.getItem('myHainanLoans') || '[]');
     const userLoan = loans.find((l: any) => l.userId === user?.id);
@@ -140,7 +144,8 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
   const getNextMonthDate = () => {
     const next = new Date();
     next.setMonth(next.getMonth() + 1);
-    next.setDate(1);
+    next.setDate(1); // Set to 1st of next month (deadline is 8th)
+    next.setHours(0, 0, 0, 0);
     return next.toISOString();
   };
 
@@ -149,7 +154,7 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
     const loanIndex = loans.findIndex((l: any) => l.id === loan.id);
 
     const newTotalPaid = loan.totalPaid + amount;
-    const newRemainingBalance = 4000 - newTotalPaid;
+    const newRemainingBalance = loan.amount - newTotalPaid;
     const newPaymentsMade = loan.paymentsMade + 1;
 
     // Award points for payment
@@ -159,6 +164,7 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
       localStorage.setItem('myHainanUser', JSON.stringify(updatedUser));
     }
 
+    // Update next payment date to next month's 1st (deadline is 8th)
     const updatedLoan = {
       ...loan,
       totalPaid: newTotalPaid,
@@ -171,6 +177,9 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
     loans[loanIndex] = updatedLoan;
     localStorage.setItem('myHainanLoans', JSON.stringify(loans));
     setLoan(updatedLoan);
+    
+    // Recheck deadlines after payment
+    checkPaymentDeadlines();
   };
 
   const progressPercentage = loan ? (loan.totalPaid / loan.amount) * 100 : 0;
@@ -718,7 +727,18 @@ export function LoansPage({ onBack }: { onBack: () => void }) {
                   <p className="text-3xl font-bold text-blue-600">
                     RM{loan.monthlyPayment.toFixed(2)}
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">Due on the 1st of each month</p>
+                  <p className="text-sm text-gray-600 mt-1">Due by the 8th of each month</p>
+                  {loan.nextPaymentDate && isPaymentOverdue(loan.nextPaymentDate) && (
+                    <div className="mt-3 bg-red-50 border border-red-200 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-700">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Payment Overdue</span>
+                      </div>
+                      <p className="text-xs text-red-600 mt-1">
+                        Your payment is past the deadline. Please make payment immediately.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Payment Actions */}
