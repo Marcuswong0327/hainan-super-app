@@ -6,6 +6,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Upload, UserPlus } from 'lucide-react';
+import { DeadlineSimulator } from './DeadlineSimulator';
 
 
 interface CommitteeMember {
