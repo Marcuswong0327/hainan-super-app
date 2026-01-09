@@ -24,6 +24,8 @@ interface Event {
   status: string;
   createdBy: string;
   createdAt: string;
+  maxCapacity?: number;
+  currentParticipants?: number;
 }
 
 
@@ -32,6 +34,8 @@ export function SuperAdminDashboard() {
   const [pendingEvents, setPendingEvents] = useState<Event[]>([]);
   const [associations, setAssociations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editMaxCapacity, setEditMaxCapacity] = useState('');
 
 
   // New Association Form
@@ -78,6 +82,13 @@ export function SuperAdminDashboard() {
       const index = events.findIndex((e: any) => e.id === eventId);
       if (index !== -1) {
         events[index].status = 'approved';
+        // Ensure maxCapacity and currentParticipants are set
+        if (!events[index].maxCapacity) {
+          events[index].maxCapacity = 100; // Default if not set
+        }
+        if (!events[index].currentParticipants) {
+          events[index].currentParticipants = 0;
+        }
         localStorage.setItem('myHainanEvents', JSON.stringify(events));
         fetchPendingEvents();
         alert('Event approved successfully!');
@@ -86,6 +97,29 @@ export function SuperAdminDashboard() {
       console.error('Error approving event:', error);
       alert('Failed to approve event');
     }
+  };
+
+  const handleUpdateMaxCapacity = async (eventId: string) => {
+    try {
+      const events = JSON.parse(localStorage.getItem('myHainanEvents') || '[]');
+      const index = events.findIndex((e: any) => e.id === eventId);
+      if (index !== -1) {
+        events[index].maxCapacity = parseInt(editMaxCapacity) || 0;
+        localStorage.setItem('myHainanEvents', JSON.stringify(events));
+        fetchPendingEvents();
+        setEditingEvent(null);
+        setEditMaxCapacity('');
+        alert('Max capacity updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error updating max capacity:', error);
+      alert('Failed to update max capacity');
+    }
+  };
+
+  const openEditCapacityDialog = (event: Event) => {
+    setEditingEvent(event);
+    setEditMaxCapacity(event.maxCapacity?.toString() || '');
   };
 
 
@@ -299,7 +333,20 @@ export function SuperAdminDashboard() {
                               <div>Time: {event.time}</div>
                               <div>Venue: {event.venue}</div>
                               <div>Price: RM {event.price}</div>
+                              <div>Max Capacity: {event.maxCapacity || 'Not set'}</div>
+                              <div>Current Participants: {event.currentParticipants || 0}</div>
                             </div>
+                            {event.maxCapacity && (
+                              <div className="mb-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditCapacityDialog(event)}
+                                >
+                                  Edit Max Capacity
+                                </Button>
+                              </div>
+                            )}
                             <p className="text-sm text-gray-700 mb-3">{event.description}</p>
                             <Badge variant="outline">Submitted: {new Date(event.createdAt).toLocaleDateString()}</Badge>
                           </div>
@@ -491,6 +538,49 @@ export function SuperAdminDashboard() {
         </Tabs>
       </div>
 
+
+      {/* Edit Max Capacity Dialog */}
+      <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Max Capacity</DialogTitle>
+            <DialogDescription>
+              Update the maximum capacity for this event
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="max-capacity">Maximum Capacity *</Label>
+              <Input
+                id="max-capacity"
+                type="number"
+                min="1"
+                value={editMaxCapacity}
+                onChange={(e) => setEditMaxCapacity(e.target.value)}
+                placeholder="Enter max capacity"
+                required
+              />
+              {editingEvent && (
+                <p className="text-xs text-gray-500">
+                  Current: {editingEvent.maxCapacity || 'Not set'} | 
+                  Participants: {editingEvent.currentParticipants || 0}
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setEditingEvent(null);
+              setEditMaxCapacity('');
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={() => editingEvent && handleUpdateMaxCapacity(editingEvent.id)}>
+              Update Capacity
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reject Event Dialog */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
