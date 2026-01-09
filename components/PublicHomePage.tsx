@@ -38,6 +38,8 @@ interface Event {
   description: string;
   imageUrl: string;
   status: string;
+  maxCapacity?: number;
+  currentParticipants?: number;
 }
 
 
@@ -267,21 +269,6 @@ export function PublicHomePage() {
         </div>
 
 
-        {/* Gamification Strip */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">Progress to Platinum Member</span>
-              <span className="text-sm font-medium">{user?.points || 0}/1000 Points</span>
-            </div>
-            <Progress value={getPointsProgress()} className="h-3" />
-            <p className="text-xs text-gray-500 mt-2">
-              📢 Reminder: Keep earning points by attending events and making donations!
-            </p>
-          </CardContent>
-        </Card>
-
-
         {/* Loan Tracker (if exists) */}
         {loan && (
           <Card>
@@ -347,6 +334,14 @@ export function PublicHomePage() {
                         {event.date} · {event.time}
                       </p>
                       <p className="text-sm text-gray-500 mb-2">{event.venue}</p>
+                      {event.maxCapacity && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          Participants: {event.currentParticipants || 0} / {event.maxCapacity}
+                          {event.currentParticipants && event.maxCapacity && event.currentParticipants >= event.maxCapacity && (
+                            <span className="ml-2 text-red-600 font-medium">(Full)</span>
+                          )}
+                        </p>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-red-600">RM {event.price}</span>
                         <Button
@@ -355,8 +350,11 @@ export function PublicHomePage() {
                             setSelectedEvent(event);
                             setCurrentPage('booking');
                           }}
+                          disabled={event.maxCapacity !== undefined && event.currentParticipants !== undefined && event.currentParticipants >= event.maxCapacity}
                         >
-                          Book Now
+                          {event.maxCapacity && event.currentParticipants && event.currentParticipants >= event.maxCapacity 
+                            ? 'Full' 
+                            : 'Book Now'}
                         </Button>
                       </div>
                     </CardContent>
