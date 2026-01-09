@@ -15,6 +15,8 @@ interface Event {
   price: number;
   description: string;
   imageUrl?: string;
+  maxCapacity?: number;
+  currentParticipants?: number;
 }
 
 export function EventBookingPage({ event, onBack }: { event: Event; onBack: () => void }) {
@@ -27,6 +29,15 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
   const totalPrice = event.price * attendees;
 
   const handleCompleteBooking = () => {
+    // Check capacity
+    if (event.maxCapacity) {
+      const currentParticipants = event.currentParticipants || 0;
+      if (currentParticipants + attendees > event.maxCapacity) {
+        alert(`Cannot book ${attendees} attendee(s). Only ${event.maxCapacity - currentParticipants} spots remaining.`);
+        return;
+      }
+    }
+
     // Save booking to localStorage
     const bookings = JSON.parse(localStorage.getItem('myHainanBookings') || '[]');
     const newBooking = {
@@ -46,6 +57,14 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
     };
     bookings.push(newBooking);
     localStorage.setItem('myHainanBookings', JSON.stringify(bookings));
+
+    // Update event participants count
+    const events = JSON.parse(localStorage.getItem('myHainanEvents') || '[]');
+    const eventIndex = events.findIndex((e: any) => e.id === event.id);
+    if (eventIndex !== -1) {
+      events[eventIndex].currentParticipants = (events[eventIndex].currentParticipants || 0) + attendees;
+      localStorage.setItem('myHainanEvents', JSON.stringify(events));
+    }
 
     // Update user points
     if (user) {
@@ -137,6 +156,25 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
                   <MapPin className="w-4 h-4" />
                   <span>{event.venue}</span>
                 </div>
+                {event.maxCapacity && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="font-medium">
+                      Participants: {event.currentParticipants || 0} / {event.maxCapacity}
+                    </span>
+                    {event.currentParticipants && event.maxCapacity && (
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        event.currentParticipants >= event.maxCapacity 
+                          ? 'bg-red-100 text-red-700' 
+                          : event.currentParticipants >= event.maxCapacity * 0.8
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {event.currentParticipants >= event.maxCapacity ? 'Full' : 
+                         event.maxCapacity - event.currentParticipants <= 10 ? 'Limited Spots' : 'Available'}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -145,6 +183,14 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Number of Attendees 人数</h3>
 
+                {event.maxCapacity && (
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      <strong>Available Spots:</strong> {Math.max(0, (event.maxCapacity || 0) - (event.currentParticipants || 0))} remaining
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label>How many people?</Label>
                   <div className="flex items-center gap-4">
@@ -152,6 +198,7 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
                       variant="outline"
                       onClick={() => setAttendees(Math.max(1, attendees - 1))}
                       className="w-12 h-12"
+                      disabled={attendees <= 1}
                     >
                       -
                     </Button>
@@ -163,10 +210,20 @@ export function EventBookingPage({ event, onBack }: { event: Event; onBack: () =
                       variant="outline"
                       onClick={() => setAttendees(attendees + 1)}
                       className="w-12 h-12"
+                      disabled={
+                        event.maxCapacity ? 
+                        (event.currentParticipants || 0) + attendees + 1 > event.maxCapacity : 
+                        false
+                      }
                     >
                       +
                     </Button>
                   </div>
+                  {event.maxCapacity && (event.currentParticipants || 0) + attendees > event.maxCapacity && (
+                    <p className="text-sm text-red-600">
+                      Cannot exceed maximum capacity of {event.maxCapacity}
+                    </p>
+                  )}
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
