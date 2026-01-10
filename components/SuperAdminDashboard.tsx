@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { CheckCircle, XCircle, FileText, Building2, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { DeadlineSimulator } from './DeadlineSimulator';
+import { DeadlineSimulator } from './DeadlineSimulator.tsx';
 
 
 interface Event {
