@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { AlertTriangle, Clock } from 'lucide-react';
-import { simulateDeadlineCheck } from '../paymentDeadline';
+import { simulateDeadlineCheck } from '../DeadlineSimulator/paymentDeadline';
 
 export function DeadlineSimulator() {
   const [simulated, setSimulated] = useState(false);
