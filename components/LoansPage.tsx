@@ -8,7 +8,7 @@ import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ArrowLeft, CreditCard, DollarSign, Calendar, CheckCircle2, Camera, FileText, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { checkPaymentDeadlines, isPaymentOverdue } from '../DeadlineSimulator.tsx';
+import { checkPaymentDeadlines, isPaymentOverdue } from '../DeadlineSimulator';
 
 export function LoansPage({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
